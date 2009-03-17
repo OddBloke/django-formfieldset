@@ -109,7 +109,7 @@ class FieldsetMixin(object):
         "Returns this form's fieldsets rendered as HTML <tr>s -- " \
         "excluding the <table></table>."
         return self._html_fieldset_output(
-            u'<tr><th colspan="2">%(name)s%(description)s</th></tr>%(fields)s',
+            u'<tr><th colspan="2"><h2>%(name)s%</h2>(description)s</th></tr>%(fields)s',
             u'<tr><th>%(label)s</th><td>%(errors)s%(field)s%(help_text)s' \
                                                                 u'</td></tr>',
             u'<tr><td colspan="2">%s</td></tr>',
