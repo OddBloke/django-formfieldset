@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from django.test import TestCase
 from django import forms as django_forms
 import forms
