@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from django import forms as django_forms
 from django.utils.html import escape
 from django.utils.safestring import mark_safe
