@@ -59,6 +59,24 @@ class Fieldset(object):
                                             'help_text': help_text})
         return output
 
+    def as_table(self):
+        fields = self.html_output(
+            u'<tr><th>%(label)s</th>'
+                u'<td>%(errors)s%(field)s%(help_text)s</td></tr>',
+            u'<tr><td colspan="2">%s</td></tr>',
+            u'<br />%s',
+            False)
+        description = ''
+        if self.description is not None:
+            description = self.description
+        return mark_safe(
+            u'<tr><th colspan="2">'
+            u'<h2>%(name)s</h2>%(description)s</th></tr>%(fields)s'
+                    % {'name': self.name,
+                       'description': description,
+                       'fields': u'\n'.join(fields),
+                      })
+
 
 class FieldsetMixin(object):
     def iter_fieldsets(self):
