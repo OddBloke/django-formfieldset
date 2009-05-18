@@ -22,12 +22,13 @@ class Fieldset(object):
                                                 self.form.fields[field],
                                                 field)
 
-    def html_output(self, form, normal_row, error_row, help_text_html,
-                    errors_on_separate_row):
+    def html_output(self, normal_row, error_row, help_text_html,
+                    errors_on_separate_row,
+                    error_class=django_forms.util.ErrorList, label_suffix=':'):
         output = []
         for bf in self:
             # Escape and cache in local variable.
-            bf_errors = form.error_class([escape(error) for error in bf.errors])
+            bf_errors = error_class([escape(error) for error in bf.errors])
             if bf.is_hidden:
                 if bf_errors:
                     top_errors.extend(
@@ -41,9 +42,9 @@ class Fieldset(object):
                     label = escape(force_unicode(bf.label))
                     # Only add the suffix if the label does not end in
                     # punctuation.
-                    if form.label_suffix:
+                    if label_suffix:
                         if label[-1] not in ':?.!':
-                            label += form.label_suffix
+                            label += label_suffix
                     label = bf.label_tag(label) or ''
                 else:
                     label = ''
@@ -79,9 +80,14 @@ class FieldsetMixin(object):
         top_errors = self.non_field_errors()
         output, hidden_fields = [], []
         for fieldset in self.iter_fieldsets():
-            fieldset_output = fieldset.html_output(self, normal_row, error_row,
-                                                   help_text_html,
-                                                   errors_on_separate_row)
+            fieldset_output = fieldset.html_output(
+                self,
+                normal_row,
+                error_row,
+                help_text_html,
+                errors_on_separate_row,
+                error_class=self.error_class,
+                label_suffix=self.label_suffix)
             if fieldset.description:
                 description = help_text_html % force_unicode(
                                                          fieldset.description)
