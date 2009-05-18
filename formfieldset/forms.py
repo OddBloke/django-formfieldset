@@ -22,6 +22,42 @@ class Fieldset(object):
                                                 self.form.fields[field],
                                                 field)
 
+    def html_output(self, form, normal_row, error_row, help_text_html,
+                    errors_on_separate_row):
+        output = []
+        for bf in self:
+            # Escape and cache in local variable.
+            bf_errors = form.error_class([escape(error) for error in bf.errors])
+            if bf.is_hidden:
+                if bf_errors:
+                    top_errors.extend(
+                        [u'(Hidden field %s) %s' % (bf.name, force_unicode(e))
+                            for e in bf_errors])
+                hidden_fields.append(unicode(bf))
+            else:
+                if errors_on_separate_row and bf_errors:
+                    output.append(error_row % force_unicode(bf_errors))
+                if bf.label:
+                    label = escape(force_unicode(bf.label))
+                    # Only add the suffix if the label does not end in
+                    # punctuation.
+                    if form.label_suffix:
+                        if label[-1] not in ':?.!':
+                            label += form.label_suffix
+                    label = bf.label_tag(label) or ''
+                else:
+                    label = ''
+                if bf.field.help_text:
+                    help_text = help_text_html % force_unicode(
+                                                    bf.field.help_text)
+                else:
+                    help_text = u''
+                output.append(normal_row % {'errors': force_unicode(bf_errors),
+                                            'label': force_unicode(label),
+                                            'field': unicode(bf),
+                                            'help_text': help_text})
+        return output
+
 
 class FieldsetMixin(object):
     def iter_fieldsets(self):
@@ -43,40 +79,9 @@ class FieldsetMixin(object):
         top_errors = self.non_field_errors()
         output, hidden_fields = [], []
         for fieldset in self.iter_fieldsets():
-            fieldset_output = []
-            for bf in fieldset:
-                # Escape and cache in local variable.
-                bf_errors = self.error_class(
-                                       [escape(error) for error in bf.errors])
-                if bf.is_hidden:
-                    if bf_errors:
-                        top_errors.extend([u'(Hidden field %s) %s' % (bf.name,
-                                        force_unicode(e)) for e in bf_errors])
-                    hidden_fields.append(unicode(bf))
-                else:
-                    if errors_on_separate_row and bf_errors:
-                        fieldset_output.append(error_row % force_unicode(
-                                                                   bf_errors))
-                    if bf.label:
-                        label = escape(force_unicode(bf.label))
-                        # Only add the suffix if the label does not end in
-                        # punctuation.
-                        if self.label_suffix:
-                            if label[-1] not in ':?.!':
-                                label += self.label_suffix
-                        label = bf.label_tag(label) or ''
-                    else:
-                        label = ''
-                    if bf.field.help_text:
-                        help_text = help_text_html % force_unicode(
-                                                           bf.field.help_text)
-                    else:
-                        help_text = u''
-                    fieldset_output.append(normal_row % {
-                                        'errors': force_unicode(bf_errors),
-                                        'label': force_unicode(label),
-                                        'field': unicode(bf),
-                                        'help_text': help_text})
+            fieldset_output = fieldset.html_output(self, normal_row, error_row,
+                                                   help_text_html,
+                                                   errors_on_separate_row)
             if fieldset.description:
                 description = help_text_html % force_unicode(
                                                          fieldset.description)
