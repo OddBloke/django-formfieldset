@@ -22,9 +22,10 @@ class Fieldset(object):
                                                 self.form.fields[field],
                                                 field)
 
-    def html_output(self, normal_row, error_row, help_text_html,
-                    errors_on_separate_row,
-                    error_class=django_forms.util.ErrorList, label_suffix=':'):
+    def html_output(self, normal_row, error_row, row_ender, help_text_html,
+                    errors_on_separate_row, top_errors=[], hidden_fields=[],
+                    stand_alone=True, error_class=django_forms.util.ErrorList,
+                    label_suffix=':'):
         output = []
         for bf in self:
             # Escape and cache in local variable.
@@ -57,6 +58,22 @@ class Fieldset(object):
                                             'label': force_unicode(label),
                                             'field': unicode(bf),
                                             'help_text': help_text})
+            if stand_alone:
+                if top_errors:
+                    output.insert(0, error_row % force_unicode(top_errors))
+                if hidden_fields:
+                    # Insert any hidden fields in the last row.
+                    str_hidden = u''.join(hidden_fields)
+                    if output:
+                        last_row = output[-1]
+                        # Chop off the trailing row_ender (e.g. '</td></tr>')
+                        # and insert the hidden fields.
+                        output[-1] = last_row[:-len(row_ender)] + \
+                                     str_hidden + row_ender
+                    else:
+                        # If there aren't any rows in the output, just append
+                        # the hidden fields.
+                        output.append(str_hidden)
         return output
 
     def as_table(self):
@@ -64,8 +81,10 @@ class Fieldset(object):
             u'<tr><th>%(label)s</th>'
                 u'<td>%(errors)s%(field)s%(help_text)s</td></tr>',
             u'<tr><td colspan="2">%s</td></tr>',
+            '</td></tr>',
             u'<br />%s',
-            False)
+            False,
+            stand_alone=True)
         description = ''
         if self.description is not None:
             description = self.description
@@ -102,8 +121,12 @@ class FieldsetMixin(object):
                 self,
                 normal_row,
                 error_row,
+                row_ender,
                 help_text_html,
                 errors_on_separate_row,
+                top_errors,
+                hidden_fields,
+                stand_alone=False,
                 error_class=self.error_class,
                 label_suffix=self.label_suffix)
             if fieldset.description:
