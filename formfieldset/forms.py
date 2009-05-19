@@ -118,7 +118,6 @@ class FieldsetMixin(object):
         output, hidden_fields = [], []
         for fieldset in self.iter_fieldsets():
             fieldset_output = fieldset.html_output(
-                self,
                 normal_row,
                 error_row,
                 row_ender,
